@@ -18,7 +18,7 @@
     },
     {
       "id": 3,
-      "name": "Alex Johnson",
+      "name": "Akash Yadav",
       "email": "student@lms.com",
       "password": "Student@123",
       "role": "STUDENT",
@@ -289,6 +289,8 @@
   "sessions": {
     "JSESS_4zl2dmnbzut1791289630509": 5,
     "JSESS_laq5ip5lt8j1791289681907": 1,
-    "JSESS_knij4t4rmdg1791297210591": 1
+    "JSESS_o5sbkmaotbf1791302854477": 1,
+    "JSESS_ld3jx4s8u61791304715117": 2,
+    "JSESS_k7j074kfh3e1791309579098": 1
   }
 }
