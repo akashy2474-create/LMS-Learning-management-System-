@@ -25,15 +25,7 @@ MySQL 8.0 Relational Database (lms_db)
 
 ---
 
-## 🎯 Review 1 Marking Rubric Breakdown (Total: 33 Marks)
 
-| Evaluation Rubric | Required Concepts | Implementation Proof in Codebase | Score |
-| :--- | :--- | :--- | :---: |
-| **1. Problem Understanding & Solution Design** | Requirement analysis, architectural diagrams, logical planning. | 3-tier Role-Based Access Control, course authoring pipeline, and **Student Enrollment Approval Workflow**. Full documentation in `docs/ARCH_AND_DIAGRAMS.md`. | **8 / 8** |
-| **2. Core Java Concepts** | OOP, Collections, Exception Handling, Threads. | - **OOP**: Encapsulated entities (`User`, `Course`, `Enrollment`, `CourseMaterial`, `Message`, `Settings`)<br>- **Collections**: `List`, `ArrayList`, `Map`, `HashMap`, and `Set`/`HashSet` for constant-time lookups<br>- **Exceptions**: Custom hierarchy (`ValidationException`, `AuthorizationException`, `DatabaseException`)<br>- **Threads**: Managed `ThreadPoolManager` (`ExecutorService`) for asynchronous student notifications and audit logging. | **10 / 10** |
-| **3. Database Integration (JDBC)** | Schema design, CRUD operations, transactions. | 3NF Normalized MySQL schema (`database/schema.sql`), `PreparedStatement`, `try-with-resources`, and **multi-step ACID transactions** with `setAutoCommit(false)`, `commit()`, and `rollback()`. | **8 / 8** |
-| **4. Servlets & Web Integration** | Request/response handling, session management. | Jakarta Servlets (`doGet`, `doPost`, `doPut`, `doDelete`), native cookie-based `HttpSession` (`JSESSIONID`), and `AuthenticationFilter` with RBAC route security. | **7 / 7** |
-| **TOTAL** | | | **33 / 33** |
 
 ---
 
