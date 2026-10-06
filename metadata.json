@@ -1,0 +1,8 @@
+{
+  "name": "Online Learning Management System",
+  "description": "A modern, full-stack Java Servlet & React LMS platform with role-based access control for Admins, Instructors, and Students.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
