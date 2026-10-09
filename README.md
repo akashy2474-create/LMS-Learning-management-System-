@@ -1,44 +1,108 @@
-# Online Learning Management System (LMS)
-### Java Web Based Project Review 1 — Galgotias University (Rubric Score: 33/33)
+# 🎓 Online Learning Management System (LMS)
 
-An enterprise full-stack Online Learning Management System built with a **React 19 + TypeScript** modern frontend and an authoritative **Jakarta Servlets 6.0 + JDBC + MySQL 8.0** backend deployed on **Apache Tomcat 10+**.
+### Java Web-Based Project | Review 1 | Galgotias University
+
+A full-stack **Online Learning Management System (LMS)** designed to simplify online education through centralized course management, student enrollment, learning resources, and academic progress tracking.
+
+Built using **React, TypeScript, Core Java, Jakarta Servlets, JDBC, and MySQL**, the application provides dedicated dashboards for Administrators, Instructors, and Students.
+
+### 👥 User Roles
+
+| Role | Key Responsibilities |
+|---|---|
+| **Administrator** | User management, course approvals, enrollment approvals, and system analytics |
+| **Instructor** | Course creation, learning material management, student progress tracking, and communication |
+| **Student** | Course browsing, enrollment, learning materials, and progress tracking |
 
 ---
 
 ## 🏗️ System Architecture
 
+The LMS follows a layered architecture that connects the React frontend with the Java backend and MySQL database.
+
+```text
+┌─────────────────────────────────────────┐
+│       React 19 + TypeScript             │
+│          Frontend (Port 3000)           │
+└────────────────────┬────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────┐
+│          Vite Development Proxy         │
+└────────────────────┬────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────┐
+│         Apache Tomcat 10+               │
+│          Backend (Port 8080)            │
+└────────────────────┬────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────┐
+│    Jakarta Servlets + Authentication    │
+│                 Filter                  │
+└────────────────────┬────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────┐
+│             Service Layer               │
+│  UserService, CourseService, etc.       │
+└────────────────────┬────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────┐
+│                DAO Layer                │
+│  UserDAO, CourseDAO, EnrollmentDAO      │
+└────────────────────┬────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────┐
+│             JDBC / MySQL                │
+│              Database                  │
+│                lms_db                  │
+└─────────────────────────────────────────┘
 ```
-React 19 Frontend (Port 3000)
-       ↓  HTTP / JSON (credentials: "include")
-Vite Dev Proxy (Port 3000 -> 8080)
-       ↓
-Apache Tomcat 10+ (Port 8080 /lms-api)
-       ↓
-Jakarta Servlets (@WebServlet) + AuthenticationFilter
-       ↓
-Service Layer (UserService, CourseService, EnrollmentService, MaterialService, etc.)
-       ↓
-DAO Layer (UserDAO, CourseDAO, EnrollmentDAO, MaterialDAO, etc.)
-       ↓  JDBC (PreparedStatement, ACID Transactions)
-MySQL 8.0 Relational Database (lms_db)
-```
 
----
+### Architecture Components
 
-
-
----
+- **Frontend:** React and TypeScript provide the user interface.
+- **Vite:** Runs the frontend development server and proxies API requests when configured.
+- **Apache Tomcat:** Hosts the Java web application.
+- **Jakarta Servlets:** Handle HTTP requests and responses.
+- **Authentication Filter:** Applies authentication checks to configured requests.
+- **Service Layer:** Handles application business logic.
+- **DAO Layer:** Manages database access operations.
+- **JDBC:** Connects the Java backend to MySQL.
+- **MySQL:** Stores application data.
 
 ## 🚀 Step-by-Step Setup & Execution Guide in VS Code
 
-### Prerequisites
-1. **Java JDK 17+** (`java -version`)
-2. **Apache Maven 3.8+** (`mvn -v`)
-3. **MySQL Server 8.0+** (`mysql --version`)
-4. **Apache Tomcat 10.1+** (Configured on Port 8080)
-5. **Node.js 18+ & npm** (`node -v`, `npm -v`)
+## 🚀 Setup & Execution Guide
 
----
+Follow these steps to configure and run the Online Learning Management System using Visual Studio Code.
+
+### 📋 Prerequisites
+
+Ensure the following tools are installed on your system:
+
+| Technology | Minimum Requirement | Verification Command |
+|---|---|---|
+| Java JDK | 17+ | `java -version` |
+| Apache Maven | 3.8+ | `mvn -v` |
+| MySQL Server | 8.0+ | `mysql --version` |
+| Apache Tomcat | 10.1+ | Verify installation |
+| Node.js | 18+ | `node -v` |
+| npm | Compatible version | `npm -v` |
+
+### Before You Begin
+
+- Ensure MySQL Server is running.
+- Configure Apache Tomcat on port `8080`.
+- Verify that Java and Maven are available in your system's PATH.
+- Open the project in Visual Studio Code.
+- Identify the backend directory containing `pom.xml` and the frontend directory containing `package.json`.
+
+**Note:** The required versions and directory structure must match your actual project configuration.
 
 ### Step 1: Initialize MySQL Database
 1. Open MySQL Workbench or your terminal:
