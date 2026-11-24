@@ -1,149 +1,323 @@
 # Online Learning Management System (LMS)
-### Java Web Based Project Review 1 — Galgotias University (Rubric Score: 33/33)
 
-An enterprise full-stack Online Learning Management System built with a **React 19 + TypeScript** modern frontend and an authoritative **Jakarta Servlets 6.0 + JDBC + MySQL 8.0** backend deployed on **Apache Tomcat 10+**.
+### Java Web-Based Project – Galgotias University
+
+A full-stack Online Learning Management System built using **React 19, TypeScript, Java Jakarta Servlets, JDBC, and MySQL 8.0**, deployed on Apache Tomcat.
+
+The application provides separate dashboards for Administrators, Instructors, and Students to manage courses, enrollments, learning materials, and student progress.
 
 ---
 
 ## 🏗️ System Architecture
 
+```text
+React 19 + TypeScript (Port 3000)
+             ↓
+       HTTP / JSON
+             ↓
+      API Proxy (Vite)
+             ↓
+    Apache Tomcat 10+
+             ↓
+       Java Servlets
+             ↓
+       Service Layer
+             ↓
+          DAO Layer
+             ↓
+       JDBC + HikariCP
+             ↓
+         MySQL 8.0
 ```
-React 19 Frontend (Port 3000)
-       ↓  HTTP / JSON (credentials: "include")
-Vite Dev Proxy (Port 3000 -> 8080)
-       ↓
-Apache Tomcat 10+ (Port 8080 /lms-api)
-       ↓
-Jakarta Servlets (@WebServlet) + AuthenticationFilter
-       ↓
-Service Layer (UserService, CourseService, EnrollmentService, MaterialService, etc.)
-       ↓
-DAO Layer (UserDAO, CourseDAO, EnrollmentDAO, MaterialDAO, etc.)
-       ↓  JDBC (PreparedStatement, ACID Transactions)
-MySQL 8.0 Relational Database (lms_db)
+
+The application follows a layered architecture that separates the frontend, business logic, database operations, and data storage.
+
+---
+
+## 🎯 Main Features
+
+### Administrator
+- Manage student and instructor accounts.
+- Review and approve courses.
+- Approve or reject enrollment requests.
+- Manage platform settings and analytics.
+
+### Instructor
+- Create, edit, and manage courses.
+- Add lessons and PDF materials.
+- View enrolled students.
+- Track student learning progress.
+
+### Student
+- Browse available courses.
+- Request course enrollment.
+- Access approved learning materials.
+- Track learning progress.
+
+---
+
+## 🛠️ Technology Stack
+
+| Component | Technology |
+|---|---|
+| Frontend | React 19, TypeScript |
+| UI Styling | Tailwind CSS |
+| Backend | Java 17, Jakarta Servlets 6.0 |
+| Server | Apache Tomcat 10.1+ |
+| Database | MySQL 8.0 |
+| Connectivity | JDBC |
+| Connection Pool | HikariCP |
+| Build Tool | Maven |
+| Testing | JUnit 5, H2, Embedded Tomcat |
+| Development Server | Node.js, Express, Vite |
+
+---
+
+## 📁 Project Structure
+
+```text
+LMS/
+├── database/
+│   └── schema.sql
+├── docs/
+│   └── ARCH_AND_DIAGRAMS.md
+├── src/
+│   ├── main/java/com/lms/
+│   │   ├── controller/
+│   │   ├── dao/
+│   │   ├── exception/
+│   │   ├── filter/
+│   │   ├── model/
+│   │   ├── service/
+│   │   └── util/
+│   ├── test/java/com/lms/
+│   ├── components/
+│   ├── context/
+│   ├── pages/
+│   ├── services/
+│   └── types/
+├── .github/workflows/
+│   └── ci.yml
+├── .gitignore
+├── .env.example
+├── package.json
+├── pom.xml
+├── server.ts
+└── vite.config.ts
 ```
 
 ---
 
-## 🎯 Review 1 Marking Rubric Breakdown (Total: 33 Marks)
+## 🗄️ Database Design
 
-| Evaluation Rubric | Required Concepts | Implementation Proof in Codebase | Score |
-| :--- | :--- | :--- | :---: |
-| **1. Problem Understanding & Solution Design** | Requirement analysis, architectural diagrams, logical planning. | 3-tier Role-Based Access Control, course authoring pipeline, and **Student Enrollment Approval Workflow**. Full documentation in `docs/ARCH_AND_DIAGRAMS.md`. | **8 / 8** |
-| **2. Core Java Concepts** | OOP, Collections, Exception Handling, Threads. | - **OOP**: Encapsulated entities (`User`, `Course`, `Enrollment`, `CourseMaterial`, `Message`, `Settings`)<br>- **Collections**: `List`, `ArrayList`, `Map`, `HashMap`, and `Set`/`HashSet` for constant-time lookups<br>- **Exceptions**: Custom hierarchy (`ValidationException`, `AuthorizationException`, `DatabaseException`)<br>- **Threads**: Managed `ThreadPoolManager` (`ExecutorService`) for asynchronous student notifications and audit logging. | **10 / 10** |
-| **3. Database Integration (JDBC)** | Schema design, CRUD operations, transactions. | 3NF Normalized MySQL schema (`database/schema.sql`), `PreparedStatement`, `try-with-resources`, and **multi-step ACID transactions** with `setAutoCommit(false)`, `commit()`, and `rollback()`. | **8 / 8** |
-| **4. Servlets & Web Integration** | Request/response handling, session management. | Jakarta Servlets (`doGet`, `doPost`, `doPut`, `doDelete`), native cookie-based `HttpSession` (`JSESSIONID`), and `AuthenticationFilter` with RBAC route security. | **7 / 7** |
-| **TOTAL** | | | **33 / 33** |
+The project uses MySQL 8.0 with seven main relational tables.
+
+| Table | Purpose |
+|---|---|
+| Users | User details and roles |
+| Courses | Course information |
+| Enrollments | Student enrollment requests |
+| Course Materials | Lessons and PDF materials |
+| Material Progress | Student learning progress |
+| Messages | User communication |
+| Settings | Platform settings |
+
+Database relationships are maintained using primary keys, foreign keys, and constraints.
+
+Database schema: `database/schema.sql`
 
 ---
 
-## 🚀 Step-by-Step Setup & Execution Guide in VS Code
+## 🔐 Security Implementation
+
+The following security improvements have been implemented in the Java backend:
+
+1. **CSRF Protection:** Validates CSRF tokens for state-changing requests using the `X-CSRF-Token` header.
+2. **Session Security:** Regenerates sessions after login, invalidates old sessions, and uses HttpOnly and SameSite cookies.
+3. **Trusted CORS Origins:** Restricts credentialed cross-origin requests to configured trusted origins.
+4. **Database Password Security:** Requires `DB_PASSWORD` through environment configuration without an insecure default password.
+5. **Connection Pooling:** Uses HikariCP for efficient database connection management.
+6. **Automated Tests:** Includes integration tests for authentication, sessions, CSRF, CORS, and database pooling.
+
+---
+
+## ⚙️ Database Connectivity
+
+The backend uses JDBC to connect Java Servlets with MySQL.
+
+- HikariCP manages database connections.
+- DAO classes handle SQL operations.
+- PreparedStatement is used for parameterized queries.
+- Service classes handle business logic.
+- Transactions maintain consistency during multi-step operations.
+
+---
+
+## 🚀 Setup & Execution Guide
 
 ### Prerequisites
-1. **Java JDK 17+** (`java -version`)
-2. **Apache Maven 3.8+** (`mvn -v`)
-3. **MySQL Server 8.0+** (`mysql --version`)
-4. **Apache Tomcat 10.1+** (Configured on Port 8080)
-5. **Node.js 18+ & npm** (`node -v`, `npm -v`)
 
----
+1. Java JDK 17+
+2. Apache Maven 3.8+
+3. MySQL Server 8.0+
+4. Apache Tomcat 10.1+
+5. Node.js 18+ and npm
 
-### 🔐 Security & Configuration (Backend)
+### Step 1: Clone Repository
 
-The Tomcat process reads its settings from environment variables (see `.env.example`):
+```bash
+git clone https://github.com/akashy2474-create/LMS-Learning-management-System-.git
 
-| Variable | Required | Purpose |
-| :--- | :---: | :--- |
-| `DB_PASSWORD` | **Yes** | MySQL password. There is no default - the app refuses to start without it. |
-| `DB_URL` / `DB_USER` | No | JDBC URL / user (defaults: local `lms_db` / `root`). |
-| `DB_POOL_MAX_SIZE` / `DB_POOL_MIN_IDLE` | No | HikariCP pool size (defaults: 10 / 2). |
-| `CORS_ALLOWED_ORIGINS` | No | Comma separated list of trusted frontend origins (default: `http://localhost:3000,http://localhost:5173`). |
-| `COOKIE_SECURE` | No | Set to `true` behind HTTPS to mark the session cookie `Secure`. |
+cd LMS-Learning-management-System-
+```
 
-Example (Windows, before starting Tomcat): `set DB_PASSWORD=your_mysql_password`
+### Step 2: Setup Database
 
-- **CSRF**: login returns a `csrfToken`; every POST/PUT/DELETE must send it in the `X-CSRF-Token` header (the React app does this automatically).
-- **Sessions**: a new session is created on every login, the cookie is `HttpOnly` + `SameSite=Lax`, and sessions expire after 30 minutes of inactivity.
-- **Tests**: run `mvn test` - integration tests start the real servlets in an embedded Tomcat with an in-memory H2 database (no MySQL needed).
+Run MySQL and execute:
 
----
+```bash
+mysql -u root -p < database/schema.sql
+```
 
-### Step 1: Initialize MySQL Database
-1. Open MySQL Workbench or your terminal:
-   ```bash
-   mysql -u root -p
-   ```
-2. Execute the complete schema and seed script:
-   ```sql
-   source database/schema.sql;
-   ```
-   *(Creates database `lms_db`, tables, foreign key constraints, indexes, and seed accounts).*
+This creates the `lms_db` database, tables, constraints, and initial demo accounts.
 
----
+### Step 3: Configure Database
 
-### Step 2: Build the Java Backend (WAR Package)
-In the project root directory, run:
+Set the environment variables before starting Tomcat.
+
+Windows CMD:
+
+```cmd
+set DB_USER=root
+set DB_PASSWORD=your_mysql_password
+set DB_URL=jdbc:mysql://localhost:3306/lms_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+```
+
+### Step 4: Build Java Backend
+
 ```bash
 mvn clean package
 ```
-- This compiles all Java Servlets, Services, DAOs, and Models.
-- It generates the deployable WAR file: `target/lms-api.war`.
 
----
+The generated WAR file will be available at:
 
-### Step 3: Deploy to Apache Tomcat 10+
-1. Copy `target/lms-api.war` to your Tomcat `webapps/` directory:
-   - **Windows:** `C:\Program Files\Apache Software Foundation\Tomcat 10.1\webapps\`
-   - **Linux/Mac:** `/opt/tomcat/webapps/`
-2. Start Apache Tomcat:
-   - **Windows:** Run `bin\startup.bat`
-   - **Linux/Mac:** Run `bin/startup.sh`
-3. Verify the Java backend is active:
-   - Open browser: `http://localhost:8080/lms-api/api/health`
-   - Returns: `{"status":"ok", ...}`
+```text
+target/lms-api.war
+```
 
----
+### Step 5: Deploy on Tomcat
 
-### Step 4: Start the React Frontend in VS Code
-1. Open a new terminal in VS Code (`Ctrl + ~`).
-2. Install frontend dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-4. Open your browser:
-   👉 **http://localhost:3000**
+Copy `lms-api.war` into the Tomcat `webapps` folder and start Tomcat.
+
+Verify backend:
+
+```text
+http://localhost:8080/lms-api/api/health
+```
+
+### Step 6: Start Frontend
+
+```bash
+npm install
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
 
 ---
 
 ## 🔑 Demo Login Credentials
 
-| Role | Email | Password | Access Capabilities |
-| :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@lms.com` | `Admin@123` | User CRUD, Course Approvals, Enrollment Approvals, System Settings, Analytics |
-| **Instructor** | `instructor@lms.com` | `Instructor@123` | Course Studio (Create/Edit/Delete), Lesson & PDF Uploads, Student Progress Tracking |
-| **Student** | `student@lms.com` | `Student@123` | Course Catalog, Request Enrollment, Study Player & PDF Viewer, Progress Tracker |
-| **Student 2** | `rahul@lms.com` | `Student@123` | Additional student account for multi-user testing |
+| Role | Email | Password |
+|---|---|---|
+| Administrator | admin@lms.com | Admin@123 |
+| Instructor | instructor@lms.com | Instructor@123 |
+| Student | student@lms.com | Student@123 |
+| Student 2 | rahul@lms.com | Student@123 |
+
+These accounts are for local demonstration only.
 
 ---
 
 ## 🔄 Core Workflows
 
-### 1. Student Course Enrollment & Admin Approval
-1. **Student** browses approved courses and clicks **"Enroll Now"**.
-2. An enrollment record is created with `status = 'PENDING'`.
-3. In the student's dashboard, the course shows a **Pending Admin Approval** badge; course lessons and PDFs remain locked.
-4. **Administrator** opens the **Approvals Hub** (`/admin`), reviews the student's request, and clicks **Approve** (or **Reject** with feedback).
-5. The approval executes as an **atomic multi-step ACID transaction**:
-   - Updates `enrollments.status = 'APPROVED'`.
-   - Dispatches an automated congratulations message in `messages`.
-   - Triggers an asynchronous background thread via `ThreadPoolManager`.
-6. Student's course player unlocks immediately!
+### 1. Course Creation and Approval
 
-### 2. PDF Document Upload & Persistence
-1. **Instructor** creates a lesson under **Course Materials** and uploads a syllabus or handbook PDF.
-2. The file is safely transmitted to `MaterialServlet` (POST/PUT) and stored in the MySQL `course_materials.pdf_data` column.
-3. **Students** can read the lesson online and preview/download the embedded PDF.
+1. Instructor creates a course.
+2. Administrator reviews the course.
+3. Administrator approves or rejects it.
+4. Approved courses become available to students.
+
+### 2. Student Enrollment
+
+1. Student selects an available course.
+2. Enrollment request is submitted.
+3. Administrator reviews the request.
+4. On approval, the student gets access to course materials.
+
+### 3. Learning Progress
+
+1. Students access approved learning materials.
+2. Students complete lessons.
+3. Progress is stored in the database.
+4. Students and instructors can view learning progress.
+
+---
+
+## 🧪 Testing
+
+Automated integration tests are included using JUnit 5, Embedded Tomcat, and H2.
+
+Run tests:
+
+```bash
+mvn test
+```
+
+Build backend:
+
+```bash
+mvn clean package
+```
+
+Build frontend:
+
+```bash
+npm run build
+```
+
+Tests cover authentication, session management, CSRF validation, CORS restrictions, role-based access, and database connection pooling.
+
+---
+
+## 🔄 GitHub Actions
+
+The project includes a GitHub Actions workflow at:
+
+`.github/workflows/ci.yml`
+
+It automatically runs backend tests on configured pushes and pull requests.
+
+Generated files such as `.class`, `.war`, `target/`, and `node_modules/` are excluded using `.gitignore`.
+
+---
+
+## 📌 Future Improvements
+
+- Online quizzes and assessments.
+- Course ratings and feedback.
+- Certificate generation.
+- Email notifications.
+- Advanced learning analytics.
+
+---
+
+
+
+https://github.com/akashy2474-create/LMS-Learning-management-System-
+
+**Developed as a Java Web-Based Learning Management System Project.**
