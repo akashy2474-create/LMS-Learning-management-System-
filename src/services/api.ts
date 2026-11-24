@@ -23,6 +23,13 @@ export const setSessionToken = (token: string | null) => {
   } catch {}
 };
 
+// CSRF token issued by the server on login / session check (kept in memory only)
+let csrfToken: string | null = null;
+
+export const setCsrfToken = (token: string | null) => {
+  csrfToken = token;
+};
+
 // Generic HTTP request helper using credentials: "include" + Session Header
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
@@ -35,6 +42,12 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   if (activeSessionId) {
     defaultHeaders['X-Session-ID'] = activeSessionId;
     defaultHeaders['Authorization'] = `Bearer ${activeSessionId}`;
+  }
+
+  // State-changing requests must carry the CSRF token (sent back to the server as a header)
+  const method = (options.method || 'GET').toUpperCase();
+  if (csrfToken && method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+    defaultHeaders['X-CSRF-Token'] = csrfToken;
   }
 
   const config: RequestInit = {
@@ -92,12 +105,15 @@ export const api = {
   // 1. Authentication & Session (LoginServlet, RegisterServlet, LogoutServlet, SessionServlet)
   auth: {
     login: async (email: string, password: string) => {
-      const res = await request<{ success: boolean; message: string; user?: User; sessionId?: string }>('/login', {
+      const res = await request<{ success: boolean; message: string; user?: User; sessionId?: string; csrfToken?: string }>('/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
       if (res.success && res.sessionId) {
         setSessionToken(res.sessionId);
+      }
+      if (res.success && res.csrfToken) {
+        setCsrfToken(res.csrfToken);
       }
       return res;
     },
@@ -114,16 +130,26 @@ export const api = {
     },
 
     logout: async () => {
-      setSessionToken(null);
-      return request<{ success: boolean; message: string }>('/logout', {
-        method: 'POST',
-      });
+      // Send the request first (it needs the CSRF token), then clear local tokens
+      try {
+        return await request<{ success: boolean; message: string }>('/logout', {
+          method: 'POST',
+        });
+      } finally {
+        setSessionToken(null);
+        setCsrfToken(null);
+      }
     },
 
-    getSession: () =>
-      request<{ success: boolean; user?: User; message?: string }>('/session', {
+    getSession: async () => {
+      const res = await request<{ success: boolean; user?: User; message?: string; csrfToken?: string }>('/session', {
         method: 'GET',
-      }),
+      });
+      if (res.success && res.csrfToken) {
+        setCsrfToken(res.csrfToken);
+      }
+      return res;
+    },
   },
 
   // 2. User Profile (ProfileServlet)

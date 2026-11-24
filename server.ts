@@ -1008,7 +1008,7 @@ async function startServer() {
   }
 
   const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`LMS React + Vite Server running on http://0.0.0.0:${PORT}`);
+console.log(`LMS React + Vite Server running on http://localhost:${PORT}`);
     console.log(`API proxy target: ${JAVA_BACKEND_TARGET}`);
   });
 

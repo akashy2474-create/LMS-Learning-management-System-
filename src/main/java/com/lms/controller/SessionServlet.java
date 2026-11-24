@@ -3,6 +3,7 @@ package com.lms.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lms.model.User;
 import com.lms.service.UserService;
+import com.lms.util.SecurityConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -44,6 +45,7 @@ public class SessionServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_OK);
                 jsonResponse.put("success", true);
                 jsonResponse.put("user", user);
+                jsonResponse.put("csrfToken", session.getAttribute(SecurityConfig.CSRF_SESSION_ATTR));
             } else {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 jsonResponse.put("success", false);

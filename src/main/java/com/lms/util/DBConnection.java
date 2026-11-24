@@ -1,46 +1,104 @@
 package com.lms.util;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * DBConnection - Database Connection Utility for MySQL 8.0
- * 
- * Supports environment variables and common local developer credentials:
- * - DB_URL (Default: jdbc:mysql://localhost:3306/lms_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC)
- * - DB_USER (Default: root)
- * - DB_PASSWORD (Default: root / password / empty)
+ * DBConnection - HikariCP-backed connection pool for MySQL 8.0
+ *
+ * Configuration (JVM system property first, then environment variable):
+ * - DB_URL            (default: jdbc:mysql://localhost:3306/lms_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC)
+ * - DB_USER           (default: root)
+ * - DB_PASSWORD       (REQUIRED - there is no default and no fallback guessing)
+ * - DB_POOL_MAX_SIZE  (default: 10)
+ * - DB_POOL_MIN_IDLE  (default: 2)
+ *
+ * The public API (getConnection()) is unchanged, so all DAOs keep working as before.
+ * Closing a connection returns it to the pool instead of physically closing it.
  */
 public class DBConnection {
-    private static final String URL = System.getenv("DB_URL") != null ? 
-            System.getenv("DB_URL") : "jdbc:mysql://localhost:3306/lms_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    private static final String USER = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : "root";
-    private static final String PASSWORD = System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : "root";
+    private static final String DEFAULT_URL =
+            "jdbc:mysql://localhost:3306/lms_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
-    static {
+    private static volatile HikariDataSource dataSource;
+
+    private DBConnection() {}
+
+    static String setting(String key) {
+        String value = System.getProperty(key);
+        if (value == null || value.isEmpty()) {
+            value = System.getenv(key);
+        }
+        return (value == null || value.isEmpty()) ? null : value;
+    }
+
+    private static int intSetting(String key, int defaultValue) {
+        String value = setting(key);
+        if (value == null) return defaultValue;
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.err.println("MySQL JDBC Driver not found: " + e.getMessage());
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException(key + " must be a number but was: " + value);
+        }
+    }
+
+    /**
+     * Creates the pool (idempotent). Fails fast with a clear message when DB_PASSWORD is missing.
+     */
+    public static HikariDataSource init() {
+        HikariDataSource ds = dataSource;
+        if (ds != null) return ds;
+        synchronized (DBConnection.class) {
+            if (dataSource != null) return dataSource;
+
+            String password = setting("DB_PASSWORD");
+            if (password == null) {
+                throw new IllegalStateException(
+                        "DB_PASSWORD is not set. Set the DB_PASSWORD environment variable before starting the server.");
+            }
+            String url = setting("DB_URL") != null ? setting("DB_URL") : DEFAULT_URL;
+            String user = setting("DB_USER") != null ? setting("DB_USER") : "root";
+
+            HikariConfig config = new HikariConfig();
+            config.setPoolName("lms-hikari-pool");
+            config.setJdbcUrl(url);
+            config.setUsername(user);
+            config.setPassword(password);
+            config.setMaximumPoolSize(intSetting("DB_POOL_MAX_SIZE", 10));
+            config.setMinimumIdle(intSetting("DB_POOL_MIN_IDLE", 2));
+            config.setConnectionTimeout(30_000);
+            config.setIdleTimeout(600_000);
+            config.setMaxLifetime(1_800_000);
+            // Do not block application start-up if the database is temporarily down.
+            config.setInitializationFailTimeout(-1);
+
+            if (url.startsWith("jdbc:mysql:")) {
+                config.addDataSourceProperty("cachePrepStmts", "true");
+                config.addDataSourceProperty("prepStmtCacheSize", "250");
+                config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            }
+
+            dataSource = new HikariDataSource(config);
+            return dataSource;
         }
     }
 
     public static Connection getConnection() throws SQLException {
         try {
-            return DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (SQLException e) {
-            // Fallback trial with "password" if "root" failed and not explicitly configured
-            if (System.getenv("DB_PASSWORD") == null) {
-                try {
-                    return DriverManager.getConnection(URL, USER, "password");
-                } catch (SQLException ignored) {
-                    try {
-                        return DriverManager.getConnection(URL, USER, "");
-                    } catch (SQLException ignored2) {}
-                }
-            }
-            throw e;
+            return init().getConnection();
+        } catch (IllegalStateException e) {
+            throw new SQLException(e.getMessage(), e);
+        }
+    }
+
+    /** Closes the pool (called when Tomcat shuts the application down). */
+    public static synchronized void shutdown() {
+        if (dataSource != null) {
+            dataSource.close();
+            dataSource = null;
         }
     }
 }

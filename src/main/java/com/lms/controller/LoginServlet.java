@@ -3,6 +3,7 @@ package com.lms.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lms.model.User;
 import com.lms.service.UserService;
+import com.lms.util.SecurityConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -34,7 +35,8 @@ public class LoginServlet extends HttpServlet {
             User user = userService.authenticateUser(email, password);
 
             // Store user details in HttpSession (passwords never stored in session)
-            HttpSession session = request.getSession(true);
+            // New session on every login (prevents session fixation) + CSRF token
+            HttpSession session = SecurityConfig.startSession(request);
             session.setAttribute("userId", user.getId());
             session.setAttribute("name", user.getName());
             session.setAttribute("email", user.getEmail());
@@ -50,6 +52,7 @@ public class LoginServlet extends HttpServlet {
             userMap.put("email", user.getEmail());
             userMap.put("role", user.getRole());
             jsonResponse.put("user", userMap);
+            jsonResponse.put("csrfToken", session.getAttribute(SecurityConfig.CSRF_SESSION_ATTR));
 
         } catch (com.lms.exception.ValidationException | IllegalArgumentException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

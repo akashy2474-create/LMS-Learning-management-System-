@@ -1,6 +1,7 @@
 package com.lms.util;
 
 import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.SessionCookieConfig;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 import java.util.logging.Logger;
@@ -18,6 +19,16 @@ public class AppContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         LOGGER.info("Starting up Online Learning Management System on Tomcat 10+...");
+
+        // Session cookie hardening: HttpOnly + SameSite=Lax (+ Secure when COOKIE_SECURE=true)
+        SessionCookieConfig cookie = sce.getServletContext().getSessionCookieConfig();
+        cookie.setHttpOnly(true);
+        cookie.setSecure(SecurityConfig.isCookieSecure());
+        cookie.setAttribute("SameSite", "Lax");
+
+        // Fail fast if DB_PASSWORD is missing; the pool itself connects lazily.
+        DBConnection.init();
+
         ThreadPoolManager.initialize();
     }
 
@@ -25,5 +36,6 @@ public class AppContextListener implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent sce) {
         LOGGER.info("Shutting down Online Learning Management System...");
         ThreadPoolManager.shutdown();
+        DBConnection.shutdown();
     }
 }

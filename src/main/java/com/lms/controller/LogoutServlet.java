@@ -21,11 +21,6 @@ public class LogoutServlet extends HttpServlet {
         handleLogout(request, response);
     }
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        handleLogout(request, response);
-    }
-
     private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

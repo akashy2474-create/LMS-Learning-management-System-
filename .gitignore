@@ -1,8 +1,37 @@
+# Dependencies
 node_modules/
+
+# Build output
 build/
 dist/
 coverage/
-.DS_Store
-*.log
-.env*
+target/
+*.war
+*.class
+
+# Secrets & local config (never commit these)
+.env
+.env.*
 !.env.example
+setenv.bat
+setenv.sh
+
+# Local runtime data (the Node dev server recreates it from seed data)
+data/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# AI Studio internal artifacts
+.aistudio/
